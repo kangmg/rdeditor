@@ -21,8 +21,27 @@ A launch script will also be added so that it can be started from the command li
 
 ## Usage
 
+### Command Line
+
 Can be started from the command line with `rdEditor` or `rdEditor your_molecule.mol` to start edit an existing molecule.
 Interactions with the molecule are done via clicking and dragging on the canvas, atoms or bonds. A choice of tools is available.
+
+### Jupyter Notebook
+
+rdeditor now includes a complete Jupyter Notebook wrapper for interactive molecule editing:
+
+```python
+from rdeditor import MoleculeEditor, display_molecule
+
+# Create and edit a molecule
+editor = MoleculeEditor("CCO")
+editor.edit()  # Opens GUI editor
+
+# Display the result
+display_molecule(editor.mol)
+```
+
+For complete Jupyter documentation, see [JUPYTER_USAGE.md](./JUPYTER_USAGE.md) and the tutorial notebook in [examples/rdeditor_jupyter_tutorial.ipynb](./examples/rdeditor_jupyter_tutorial.ipynb).
 
 To edit a molecule, select the pen tool, and an atom, bond or template type and click on the canvas to add it.
 
