@@ -38,6 +38,15 @@ try:
     except ImportError:
         _HAS_JSME = False
     
+    # Import Kekule editor (Best for drawing, RECOMMENDED)
+    try:
+        from .jupyter_kekule_editor import (
+            KekuleEditor,
+        )
+        _HAS_KEKULE = True
+    except ImportError:
+        _HAS_KEKULE = False
+    
     # Import display utilities
     from .jupyter_display import (
         MoleculeDisplay,
@@ -73,6 +82,12 @@ try:
         __all__.extend([
             'JSMEEditor',
             'RDKitDrawEditor',
+        ])
+    
+    # Add Kekule editor (RECOMMENDED for drawing)
+    if _HAS_KEKULE:
+        __all__.extend([
+            'KekuleEditor',
         ])
     
     # For backwards compatibility, keep Qt version but mark as deprecated

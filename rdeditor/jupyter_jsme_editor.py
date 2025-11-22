@@ -150,7 +150,8 @@ class JSMEEditor:
                     
                     // Store in Python-accessible way
                     if (typeof IPython !== 'undefined' && IPython.notebook && IPython.notebook.kernel) {{
-                        IPython.notebook.kernel.execute('_jsme_smiles_{self.editor_id} = "' + smiles.replace(/\\/g, '\\\\\\\\').replace(/"/g, '\\\\"') + '"');
+                        var escapedSmiles = smiles.replace(/\\\\/g, '\\\\\\\\').replace(/'/g, "\\\\'");
+                        IPython.notebook.kernel.execute('_jsme_smiles_{self.editor_id} = \\'' + escapedSmiles + '\\'');
                     }}
                     
                     // Show success message
