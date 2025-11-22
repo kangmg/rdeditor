@@ -76,7 +76,16 @@ class RDEditorNotebook:
             # Check if there's already a QApplication instance
             existing_app = QApplication.instance()
             if existing_app is None:
-                cls._app = QApplication(sys.argv)
+                # Set offscreen platform for headless environments
+                import os
+                if 'QT_QPA_PLATFORM' not in os.environ:
+                    # Only set if not already specified
+                    pass
+                try:
+                    cls._app = QApplication(sys.argv)
+                except RuntimeError as e:
+                    # If QApplication creation fails, try with minimal args
+                    cls._app = QApplication([])
             else:
                 cls._app = existing_app
     
@@ -91,23 +100,31 @@ class RDEditorNotebook:
             mol: Optional RDKit Mol object to load
             mol_file: Optional path to MOL file to load
         """
-        if self.window is None:
-            self.window = MainWindow(loglevel=self.loglevel)
-            self.editor = self.window.editor
-        
-        # Load molecule if provided
-        if smiles is not None:
-            self.set_smiles(smiles)
-        elif mol is not None:
-            self.set_molecule(mol)
-        elif mol_file is not None:
-            self.load_file(mol_file)
-        
-        self.window.show()
-        self._is_visible = True
-        
-        # Process events to ensure the window is displayed
-        self._process_events()
+        try:
+            if self.window is None:
+                self.window = MainWindow(loglevel=self.loglevel)
+                self.editor = self.window.editor
+            
+            # Load molecule if provided
+            if smiles is not None:
+                self.set_smiles(smiles)
+            elif mol is not None:
+                self.set_molecule(mol)
+            elif mol_file is not None:
+                self.load_file(mol_file)
+            
+            self.window.show()
+            self._is_visible = True
+            
+            # Process events to ensure the window is displayed
+            self._process_events()
+        except Exception as e:
+            print(f"Warning: Could not show GUI window: {e}")
+            print("Tip: For headless environments, use methods without .show()")
+            # Keep the editor accessible even if GUI fails
+            if self.window is None:
+                self.window = MainWindow(loglevel=self.loglevel)
+                self.editor = self.window.editor
         
     def hide(self):
         """Hide the editor window without closing it."""
