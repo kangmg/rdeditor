@@ -21,17 +21,21 @@ import base64
 from io import BytesIO
 
 from rdkit import Chem
-from rdkit.Chem import AllChem, rdDepictor, Draw
+from rdkit.Chem import AllChem, rdDepictor, Draw, Descriptors, rdMolDescriptors
 from rdkit.Chem.Draw import rdMolDraw2D
 
 try:
-    from IPython.display import display, HTML, Javascript
-    from ipywidgets import widgets, Output, VBox, HBox, Button, Text, Dropdown
+    from IPython.display import display
+    from IPython.display import HTML as IPythonHTML
+    from IPython.display import Javascript
+    from ipywidgets import widgets, Output, VBox, HBox, Button, Text, Dropdown, HTML
     IPYWIDGETS_AVAILABLE = True
 except ImportError:
     IPYWIDGETS_AVAILABLE = False
     widgets = None
     Output = None
+    HTML = None
+    IPythonHTML = None
 
 
 class HTMLMoleculeEditor:
@@ -164,9 +168,9 @@ class HTMLMoleculeEditor:
             with structure_output:
                 if self._mol is not None:
                     svg = self._get_mol_svg(500, 400)
-                    display(HTML(f'<div style="text-align: center; border: 1px solid #ddd; padding: 10px; border-radius: 5px;">{svg}</div>'))
+                    display(IPythonHTML(f'<div style="text-align: center; border: 1px solid #ddd; padding: 10px; border-radius: 5px;">{svg}</div>'))
                 else:
-                    display(HTML('<div style="text-align: center; padding: 50px; color: #999;">No molecule to display</div>'))
+                    display(IPythonHTML('<div style="text-align: center; padding: 50px; color: #999;">No molecule to display</div>'))
             
             # Update properties
             with props_output:
@@ -193,9 +197,9 @@ class HTMLMoleculeEditor:
                         </table>
                     </div>
                     """
-                    display(HTML(props_html))
+                    display(IPythonHTML(props_html))
                 else:
-                    display(HTML('<div style="color: #999; padding: 10px;">No molecule loaded</div>'))
+                    display(IPythonHTML('<div style="color: #999; padding: 10px;">No molecule loaded</div>'))
         
         def on_update_click(b):
             """Handle update button click."""
@@ -368,7 +372,7 @@ class SimpleMoleculeEditor:
             </div>
             """
         
-        display(HTML(html))
+        display(IPythonHTML(html))
 
 
 # Export public API

@@ -103,43 +103,79 @@ class JSMEEditor:
             </div>
         </div>
         
-        <script src="{self.JSME_URL}"></script>
         <script>
+            // Load JSME library if not already loaded
+            if (typeof JSApplet === 'undefined') {{
+                var script = document.createElement('script');
+                script.src = "{self.JSME_URL}";
+                script.onload = function() {{
+                    console.log('JSME library loaded');
+                    initJSME_{self.editor_id}();
+                }};
+                script.onerror = function() {{
+                    console.error('Failed to load JSME library');
+                    document.getElementById("{self.editor_id}").innerHTML = 
+                        '<div style="color: red; padding: 20px;">Failed to load JSME editor. Please check your internet connection.</div>';
+                }};
+                document.head.appendChild(script);
+            }} else {{
+                // JSME already loaded
+                initJSME_{self.editor_id}();
+            }}
+            
             var jsmeApplet_{self.editor_id};
             
-            function jsmeOnLoad_{self.editor_id}() {{
-                jsmeApplet_{self.editor_id} = new JSApplet.JSME("{self.editor_id}", "{self.width}px", "{self.height}px", {{
-                    "options": "oldlook,star"
-                }});
-                
-                {'jsmeApplet_' + self.editor_id + '.readGenericMolecularInput("' + self.smiles + '");' if self.smiles else ''}
+            function initJSME_{self.editor_id}() {{
+                try {{
+                    jsmeApplet_{self.editor_id} = new JSApplet.JSME("{self.editor_id}", "{self.width}px", "{self.height}px", {{
+                        "options": "oldlook,star"
+                    }});
+                    
+                    {'jsmeApplet_' + self.editor_id + '.readGenericMolecularInput("' + self.smiles + '");' if self.smiles else ''}
+                    console.log('JSME editor initialized: {self.editor_id}');
+                }} catch (error) {{
+                    console.error('Error initializing JSME:', error);
+                    document.getElementById("{self.editor_id}").innerHTML = 
+                        '<div style="color: red; padding: 20px;">Error initializing JSME editor: ' + error.message + '</div>';
+                }}
             }}
             
             function getSmiles_{self.editor_id}() {{
-                var smiles = jsmeApplet_{self.editor_id}.smiles();
-                document.getElementById("smiles_text_{self.editor_id}").textContent = smiles;
-                
-                // Store in Python-accessible way
-                IPython.notebook.kernel.execute('_jsme_smiles_' + '{self.editor_id}' + ' = "' + smiles + '"');
-                
-                // Show success message
-                var output = document.getElementById("smiles_output_{self.editor_id}");
-                output.style.borderColor = "#4CAF50";
-                setTimeout(function() {{
-                    output.style.borderColor = "#ddd";
-                }}, 1000);
+                try {{
+                    if (!jsmeApplet_{self.editor_id}) {{
+                        throw new Error('JSME editor not initialized');
+                    }}
+                    var smiles = jsmeApplet_{self.editor_id}.smiles();
+                    document.getElementById("smiles_text_{self.editor_id}").textContent = smiles;
+                    
+                    // Store in Python-accessible way
+                    if (typeof IPython !== 'undefined' && IPython.notebook && IPython.notebook.kernel) {{
+                        IPython.notebook.kernel.execute('_jsme_smiles_{self.editor_id} = "' + smiles.replace(/\\/g, '\\\\\\\\').replace(/"/g, '\\\\"') + '"');
+                    }}
+                    
+                    // Show success message
+                    var output = document.getElementById("smiles_output_{self.editor_id}");
+                    output.style.borderColor = "#4CAF50";
+                    setTimeout(function() {{
+                        output.style.borderColor = "#ddd";
+                    }}, 1000);
+                }} catch (error) {{
+                    console.error('Error getting SMILES:', error);
+                    alert('Error: ' + error.message);
+                }}
             }}
             
             function clearEditor_{self.editor_id}() {{
-                jsmeApplet_{self.editor_id}.clear();
-                document.getElementById("smiles_text_{self.editor_id}").textContent = "Draw a molecule...";
-            }}
-            
-            // Initialize when JSME library loads
-            if (typeof JSApplet !== 'undefined') {{
-                jsmeOnLoad_{self.editor_id}();
-            }} else {{
-                window.addEventListener('load', jsmeOnLoad_{self.editor_id});
+                try {{
+                    if (!jsmeApplet_{self.editor_id}) {{
+                        throw new Error('JSME editor not initialized');
+                    }}
+                    jsmeApplet_{self.editor_id}.clear();
+                    document.getElementById("smiles_text_{self.editor_id}").textContent = "Draw a molecule...";
+                }} catch (error) {{
+                    console.error('Error clearing editor:', error);
+                    alert('Error: ' + error.message);
+                }}
             }}
         </script>
         """
